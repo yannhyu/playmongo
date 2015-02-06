@@ -1,0 +1,1 @@
+db.privateCollection.find().forEach( function(myDoc) { print( "title: " + myDoc.title ); } );
