@@ -1,0 +1,306 @@
++++++++++++++ Part One ++++++++++++++++++++++++
+
+MongoDB (from "humongous") is a cross-platform document-oriented database system.
+
+Classified as a NoSQL database, 
+
+MongoDB deliberately avoids using the traditional table-based relational database structure in favor of JSON-like documents with dynamic schemas (MongoDB calls the format BSON), 
+
+making the integration of data in certain types of applications easier and faster. 
+
+First developed by 10gen (now MongoDB Inc.) in October 2007 as a component of a planned platform as a service product, 
+
+the company shifted to an open source development model in 2009, with 10gen offering commercial support and other services
+
+Since then, MongoDB has been adopted as backend software by a number of major websites and services, 
+
+including Craigslist, eBay, Foursquare, SourceForge, and The New York Times, among others. MongoDB is the most popular NoSQL database system.
+
+Written in	C++
+
+
+Archiving - Craigslist
+Content Management - MTV Networks
+Ecommerce - CustomInk
+Real-time Analytics - Intuit
+Social Networking - foursquare
+
+SAP uses MongoDB as a core component of SAP’s platform- as-a-service (PaaS) offering. 
+
+Under Armour Under Armour is a leading developer, marketer and distributor of branded performance apparel, footwear and accessories. MongoDB powers Under Armour’s online store, and was chosen for its dynamic schema, ability to scale horizontally and perform multi-data center replication.
+
+Automatic Data Processing, Inc. (ADP) , one of the world’s
+
+leading human capital management and payroll outsourcing solutions provider, switched to MongoDB for its high performance, scalability, reliability and its ability to preserve the data manipulation capabilities of traditional relational databases. ADP is realizing business benefits by using MongoDB to deliver its successful, real-time mobile service that adapts to user behavior.
+
+
++++++++++++++  Part Two  +++++++++++++++++++++++++++++++++++
+mongo --port=27018
+
+show dbs
+
+use lunchnlearn
+
+show collections
+
+++++++++ Searching with Multiple Criteria ++++++++
+
+#find all actors that are female:
+db.actors.find({gender: 'f'});
+
+#to specify the columns displayed
+db.actors.find({gender: 'f'}, {first:1, last:1, _id:0});
+
+
+#find all actors that are male:
+db.actors.find({gender: 'm'}, {first:1, last:1, nationality:1, _id:0});
+
+#What about male actors who are English or American:
+db.actors.find({gender: 'm', $or: [{nationality: 'english'}, {nationality: 'american'}]});
+
+#look for male actors that are English:
+db.actors.find({gender: 'm', $or: [{nationality: 'english'}]});
+
+#or simply:
+db.actors.find({gender: 'm', nationality: 'english'});
+
+
+++++++++ Sorting Records +++++
+
+#retrieves all male, English or American, actors and sorts them in descending order of nationality:
+db.actors.find({gender: 'm', $or: [{nationality: 'english'}, {nationality: 'american'}]}).sort({nationality: -1});
+
+#What about sorting by nationality in descending order and name in ascending order?
+db.actors.find({gender: 'm', $or: [{nationality: 'english'}, {nationality: 'american'}]}).sort({nationality: -1, first: 1});
+
+
+++++++++ Limiting Records +++++
+
+#What if we had a pretty big data set (lucky us, we don’t) and we wanted to limit the results to just 2?
+db.actors.find({gender: 'm', $or: [{nationality: 'english'}, {nationality: 'american'}]}).limit(2);
+
+#If we wanted the third and fourth records, i.e., skip over the first two?
+db.nettuts.find({gender: 'm', $or: [{nationality: 'english'}, {nationality: 'american'}]}).limit(2).skip(2);
+
++++++++++ Updating Records ++++++
+
+#Let’s say that we need to update the record for James Caan specifying that his hair is grey, not brown.
+db.actors.find({first: 'james', last: 'caan'}); 
+db.actors.update({first: 'james', last: 'caan'}, {$set: {hair_colour: 'brown'}});
+db.actors.update({first: 'james', last: 'caan'}, {$set: {hair_colour: 'grey'}});
+
+#word of caution though, if you don’t pass in the $set modifier, 
+#then you will replace the record, if it’s available, instead of 
+#updating it. Be careful!
+
+++++++++++ Deleting Records +++++++++
+
+db.actors.insert({
+    first: 'Christian',
+    last: 'Bale',
+    dob: '30/01/1974',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'english'
+});
+
+#
+db.actors.find({first: 'Christian', last: 'Bale'});
+db.actors.remove({first: 'Christian', last: 'Bale'});
+db.actors.find({first: 'Christian', last: 'Bale'});
+
+#what if we want to delete all the records from the database?
+db.actors.remove();
+db.actors.find();
+
+
+
++++++++++ Part Three +++++ RegEx ++++++++
+
+db.actors.find({"first": /(ma|to)*/i, "last": /(se|de)/i}, {first:1, last:1, _id:0});
+
+db.actors.find( {"first":/(ma|to)*/i}, {first:1, last:1, _id:0});
+
+db.actors.find( {"first":/\b(ma|to)*/i}, {first:1, last:1, _id:0});
+
+
+db.actors.find( {"first":/^ma*/i}, {first:1, last:1, _id:0});
+{ "first" : "michael", "last" : "caine" }
+{ "first" : "matthew", "last" : "setter" }
+
+
+
+> db.actors.find( {"first":/^matt*/i}, {first:1, last:1, _id:0});
+{ "first" : "matthew", "last" : "setter" }
+>
+
+> db.actors.find( {"first":/(ma)+/i}, {first:1, last:1, _id:0});
+{ "first" : "matthew", "last" : "setter" }
+
+
+
+db.actors.find({"first":/(ma|to)+/i, "last":/(se|de)+/i}, {first:1, last:1, _id:0});
+
+db.actors.find({"first":/(ma|to)+/i}, {first:1, last:1, _id:0});
+
+
+db.actors.find({"first":/(ma|to)+/i, "last":/(se|cu)+/i}, {first:1, last:1, _id:0});
+
+db.actors.find({"first":/(ma|to){1}/i, "last":/(se|cu){1}/i}, {first:1, last:1, _id:0});
+
+
+> db.actors.find({"first":/(ma|mi){1}/i, "last":/(se|ca){1}/i}, {first:1, last:1, _id:0}).pretty();
+{ "first" : "michael", "last" : "caine" }
+{ "first" : "matthew", "last" : "setter" }
+
+> db.actors.find({"first":/^(ma|ch){1}/i, "last":/(se|ca){1}/i}, {first:1, last:1, _id:0}).pretty();
+{ "first" : "matthew", "last" : "setter" }
+
+> db.actors.find({"first":/(ma|ch){1}/i, "last":/(se|ca){1}/i}, {first:1, last:1
+, _id:0}).pretty();
+{ "first" : "michael", "last" : "caine" }
+{ "first" : "matthew", "last" : "setter" }
+
+
+> db.actors.find({"first":/^(ma|mi){1}/i, "last":/(se|ca){1}/i}, {first:1, last:1, _id:0}).pretty();
+{ "first" : "michael", "last" : "caine" }
+{ "first" : "matthew", "last" : "setter" }
+
+
+
+
+++++++++++++  sample inserts  ++++++++++++++++++
+
+db.actors.insert({
+    first: 'ellen',
+    last: 'deGeneres',
+    dob: '01/26/1958',
+    gender: 'f',
+    hair_colour: 'blonde',
+    occupation: 'actress',
+    nationality: 'american'
+});
+
+
+db.actors.insert({
+    first: 'christian',
+    last: 'bale',
+    dob: '01/30/1974',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'english'
+});
+
+db.actors.insert({
+    first: 'matthew',
+    last: 'mcConaughey',
+    dob: '11/04/1969',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'matthew',
+    last: 'mcConaughey',
+    dob: '11/04/1969',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'amy',
+    last: 'adams',
+    dob: '08/20/1974',
+    gender: 'f',
+    hair_colour: 'brown',
+    occupation: 'actress',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'sandra',
+    last: 'bullock',
+    dob: '07/26/1964',
+    gender: 'f',
+    hair_colour: 'brown',
+    occupation: 'actress',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'robert',
+    last: 'redford',
+    dob: '08/18/1936',
+    gender: 'm',
+    hair_colour: 'blond',
+    occupation: 'actor',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'robert',
+    last: 'shaw',
+    dob: '08/09/1927',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'english'
+});
+
+db.actors.insert({
+    first: 'paul',
+    last: 'newman',
+    dob: '01/26/1925',
+    gender: 'm',
+    hair_colour: 'brown',
+    occupation: 'actor',
+    nationality: 'american'
+});
+
+db.actors.insert({
+    first: 'jackie',
+    last: 'chan',
+    dob: '04/07/1954',
+    gender: 'm',
+    hair_colour: 'black',
+    occupation: 'actor',
+    nationality: 'hong kong'
+});
+
+db.actors.insert({
+    first: '龙',
+    last: '成',
+    dob: '04/07/1954',
+    gender: 'm',
+    hair_colour: 'black',
+    occupation: 'actor',
+    nationality: 'hong kong'
+});
+
+Bruce Lee
+
+db.actors.insert({
+    first: '小龙',
+    last: '李',
+    dob: '11/27/1940',
+    gender: 'm',
+    hair_colour: 'black',
+    occupation: 'actor',
+    nationality: 'hong kong'
+});
+
+李小龙 
+
+db.actors.find({first: '龙'});
+
+jackie chan
+成龙
+
+db.actors.find( {"first":/(龙)+/i}, {first:1, last:1, _id:0});
+
